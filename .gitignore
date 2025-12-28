@@ -1,0 +1,55 @@
+# --- Python & System ---
+__pycache__/
+*.py[cod]
+*$py.class
+.DS_Store
+Thumbs.db
+
+# --- Environments (Conda Specific) ---
+# Ignore the actual environment directory (heavy)
+env/
+envs/
+.conda/
+anaconda3/
+miniconda3/
+
+# Ignore random yaml files, BUT KEEP the main config
+*.yaml
+!environment.yaml
+
+# --- IDEs ---
+.vscode/
+.idea/
+*.swp
+
+# --- Jupyter ---
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# --- Machine Learning Artifacts ---
+# Model weights (GitHub rejects files >100MB)
+*.pth
+*.pt
+*.ckpt
+*.bin
+*.h5
+*.safetensors
+
+# Training logs/metrics
+runs/
+logs/
+wandb/
+results/
+
+# --- Project Specific Data ---
+# Your specific data folders
+processed_zuco2_diamond/
+data/
+raw_data/
+
+# Your output folders
+checkpoints_phase1/
+checkpoints/
+
+# --- Hugging Face ---
+.cache/
