@@ -1,3 +1,21 @@
+"""
+HDF5 File Structure Inspector
+
+This debugging utility helps understand the structure of HDF5 files from the ZuCo 2.0
+Matlab data export. Recursively scans and prints:
+  - Node names and types (datasets vs groups)
+  - Array shapes and data types
+  - Sample values for small datasets
+  - Object references and hierarchical structure
+
+Useful for:
+  - Understanding raw ZuCo data format before preprocessing
+  - Debugging data loading issues
+  - Validating Matlab -> HDF5 conversion
+
+Modify file_path to point to your ZuCo dataset location.
+"""
+
 import h5py
 import numpy as np
 

@@ -1,3 +1,14 @@
+"""
+BrainBridge - EEG to Text Contrastive Learning Module
+
+This module implements the bridge between EEG embeddings and text embeddings using
+CLIP-style contrastive learning. It includes:
+  - BrainBridge: Main module that normalizes EEG embeddings with learnable temperature scaling
+  - BrainCLIPLoss: Contrastive loss function that aligns EEG and text embeddings
+
+Used in Phase 1 training to learn a joint embedding space for EEG and natural language.
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

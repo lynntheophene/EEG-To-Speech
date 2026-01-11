@@ -1,3 +1,19 @@
+"""
+Training Phase 1 - EEG-Text Contrastive Learning
+
+This script implements Phase 1 of the EEG-to-Speech pipeline: learning a joint embedding
+space between EEG signals and natural language using contrastive learning (CLIP-style loss).
+
+Key responsibilities:
+  - Load ZuCo dataset with optimized memory-mapped EEG data
+  - Train EEG encoder + BrainBridge model to align EEG and BERT text embeddings
+  - Validate using retrieval accuracy (EEG->Text matching)
+  - Save best checkpoints based on accuracy metric
+
+Requires: EEG encoder, Brain Bridge module, BERT tokenizer
+Output: Trained encoder checkpoint for Phase 2
+"""
+
 import os
 import torch
 import torch.nn as nn
@@ -35,7 +51,7 @@ def calculate_accuracy(eeg_embeds, text_embeds, k=1):
 
 def train():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"🚀 Device: {device}")
+    print(f" Device: {device}")
 
     # Load Data
     full_dataset = ZuCoDataset(DATA_PATH, tokenizer_name=TEXT_MODEL_NAME)
@@ -57,17 +73,17 @@ def train():
     model = BrainBridge(eeg_encoder, text_dim=768).to(device)
     ## TO LOAD A ALREADY TRAINED MODEL
     if os.path.exists(checkpoint_path):
-        print(f"🔄 Found checkpoint at {checkpoint_path}. Loading...")
+        print(f"Found checkpoint at {checkpoint_path}. Loading...")
         try:
             # Load the weights
             state_dict = torch.load(checkpoint_path, map_location=device)
             model.load_state_dict(state_dict)
-            print("✅ Checkpoint loaded successfully! Resuming training.")
+            print("Checkpoint loaded successfully! Resuming training.")
         except Exception as e:
-            print(f"⚠️ Error loading checkpoint: {e}")
-            print("🆕 Starting from scratch instead.")
+            print(f"Error loading checkpoint: {e}")
+            print("Starting from scratch instead.")
     else:
-        print("🆕 No checkpoint found. Starting training from scratch.")
+        print("No checkpoint found. Starting training from scratch.")
     ## 
     text_teacher = AutoModel.from_pretrained(TEXT_MODEL_NAME).to(device)
     for param in text_teacher.parameters():
@@ -157,14 +173,14 @@ def train():
         avg_top1 = top1_acc / len(val_loader)
         avg_top5 = top5_acc / len(val_loader)
         
-        print(f"📉 Epoch {epoch+1}: Train Loss: {avg_train:.4f} | Val Loss: {avg_val:.4f}")
-        print(f"🎯 Accuracy: Top-1: {avg_top1:.2%} | Top-5: {avg_top5:.2%}")
+        print(f"Epoch {epoch+1}: Train Loss: {avg_train:.4f} | Val Loss: {avg_val:.4f}")
+        print(f"Accuracy: Top-1: {avg_top1:.2%} | Top-5: {avg_top5:.2%}")
         
         # Save if Accuracy Improves
         if avg_top1 > best_accuracy:
             best_accuracy = avg_top1
             torch.save(model.state_dict(), os.path.join(SAVE_DIR, "best_model_acc.pth"))
-            print(f"💾 New Best Accuracy Model Saved! ({best_accuracy:.2%})")
+            print(f"New Best Accuracy Model Saved! ({best_accuracy:.2%})")
 
 if __name__ == "__main__":
     train()

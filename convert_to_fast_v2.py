@@ -1,3 +1,19 @@
+"""
+Data Conversion to Memory-Mapped Format (Version 2 - Improved)
+
+This is an improved version of convert_to_fast.py with better handling of:
+  - Variable-length EEG signals from the preprocessing stage
+  - Consistent padding/truncation to (840 samples x 105 channels)
+  - Subject ID extraction and tracking
+  - Memory efficiency for very large datasets
+
+Convert preprocessed .npz files from ./processed_zuco2_diamond/ into:
+  - Memory-mapped EEG array: optimized_zuco/eeg_data.npy
+  - Metadata pickle file: optimized_zuco/metadata.pkl
+
+This format enables fast data loading for training without storing entire dataset in RAM.
+"""
+
 import os
 import numpy as np
 import torch
@@ -15,7 +31,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def convert():
     files = [f for f in os.listdir(SOURCE_PATH) if f.endswith('.npz')]
-    print(f"🕵️ Found {len(files)} files. Scanning...")
+    print(f" Found {len(files)} files. Scanning...")
 
     # Pass 1: Count total samples
     total_samples = 0
@@ -26,7 +42,7 @@ def convert():
                 total_samples += len(data[key])
         except: pass
             
-    print(f"📦 Total Samples: {total_samples}")
+    print(f" Total Samples: {total_samples}")
     
     # Open Memmap
     eeg_memmap_path = os.path.join(OUTPUT_DIR, "eeg_data.npy")
@@ -90,7 +106,7 @@ def convert():
     with open(os.path.join(OUTPUT_DIR, "metadata.pkl"), "wb") as f:
         pickle.dump(metadata, f)
         
-    print("✅ Conversion Complete! Data orientation fixed.")
+    print(" Conversion Complete! Data orientation fixed.")
 
 if __name__ == "__main__":
     convert()

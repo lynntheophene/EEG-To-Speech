@@ -1,3 +1,20 @@
+"""
+Training Phase 2 - EEG to Text Decoding (Seq2Seq)
+
+This script implements Phase 2 of the EEG-to-Speech pipeline: fine-tuning a BART decoder
+to generate natural language text directly from EEG signals using the encoder from Phase 1.
+
+Key responsibilities:
+  - Load Phase 1 pretrained EEG encoder
+  - Combine encoder with BART decoder for sequence-to-sequence generation
+  - Train BrainTranslator to decode EEG -> text generation
+  - Evaluate using BLEU, METEOR, and other NLG metrics
+  - Handle subject-specific fine-tuning if needed
+
+Requires: Phase 1 checkpoint, BART model, ZuCo dataset
+Output: Final EEG-to-text generation model
+"""
+
 import os
 import torch
 import torch.nn as nn
@@ -57,7 +74,7 @@ class BrainTranslator(nn.Module):
 
 def train():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"🚀 Phase 2 Device: {device} (Running in FP32 Mode)")
+    print(f" Phase 2 Device: {device} (Running in FP32 Mode)")
 
     # 1. Load Data
     full_dataset = ZuCoDataset(DATA_PATH, tokenizer_name=DECODER_MODEL)
@@ -88,16 +105,16 @@ def train():
     emergency_ckpt = os.path.join(SAVE_DIR, "emergency_save.pth")
     
     if os.path.exists(emergency_ckpt):
-        print(f"⚠️ Found EMERGENCY Checkpoint. Recovering...")
+        print(f"Found EMERGENCY Checkpoint. Recovering...")
         try:
             model.load_state_dict(torch.load(emergency_ckpt, map_location=device))
         except:
-            print("❌ Emergency file corrupted. Skipping.")
+            print(" Emergency file corrupted. Skipping.")
     elif os.path.exists(phase2_ckpt):
-        print(f"🔄 Found PHASE 2 Checkpoint. Resuming...")
+        print(f"Found PHASE 2 Checkpoint. Resuming...")
         model.load_state_dict(torch.load(phase2_ckpt, map_location=device))
     elif os.path.exists(PHASE1_CHECKPOINT):
-        print(f"🔄 Loading PHASE 1 weights...")
+        print(f"Loading PHASE 1 weights...")
         state_dict = torch.load(PHASE1_CHECKPOINT, map_location=device)
         encoder_dict = {k.replace('eeg_encoder.', ''): v for k, v in state_dict.items() if k.startswith('eeg_encoder.')}
         eeg_encoder.load_state_dict(encoder_dict, strict=False)
@@ -109,7 +126,7 @@ def train():
     best_val_loss = float('inf')
     tokenizer = BartTokenizer.from_pretrained(DECODER_MODEL)
 
-    print("🛡️ Starting Robust Training Loop...")
+    print("Starting Robust Training Loop...")
     
     try:
         for epoch in range(EPOCHS):
@@ -163,7 +180,7 @@ def train():
                     val_loss += loss.item()
 
             avg_val = val_loss / len(val_loader)
-            print(f"📉 Summary: Train Loss: {avg_train:.4f} | Val Loss: {avg_val:.4f}")
+            print(f"Summary: Train Loss: {avg_train:.4f} | Val Loss: {avg_val:.4f}")
             
             torch.cuda.empty_cache()
             gc.collect()
@@ -171,13 +188,13 @@ def train():
             if avg_val < best_val_loss:
                 best_val_loss = avg_val
                 torch.save(model.state_dict(), os.path.join(SAVE_DIR, "best_model_phase2.pth"))
-                print("💾 Saved Best Generator!")
+                print("Saved Best Generator!")
                 
                 sample_eeg = eeg[0].unsqueeze(0)
                 sample_mask = mask[0].unsqueeze(0)
                 sample_sub = sub_ids[0].unsqueeze(0)
                 truth = tokenizer.decode(input_ids[0], skip_special_tokens=True)
-                print(f"   📖 Target: '{truth}'")
+                print(f"    Target: '{truth}'")
 
                 with torch.no_grad():
                     emb = model.encoder(sample_eeg, sample_mask, sample_sub).unsqueeze(1)
@@ -188,16 +205,16 @@ def train():
                         repetition_penalty=1.2, early_stopping=True
                     )
                     pred_text = tokenizer.decode(generated_ids[0], skip_special_tokens=True)
-                    print(f"   🧠 Brain:  '{pred_text}'")
+                    print(f"    Brain:  '{pred_text}'")
 
     except Exception as e:
-        print(f"\n🚨 CRASH DETECTED: {e}")
-        print("💾 Saving EMERGENCY checkpoint...")
+        print(f"\n CRASH DETECTED: {e}")
+        print(" Saving EMERGENCY checkpoint...")
         try:
             torch.save(model.state_dict(), os.path.join(SAVE_DIR, "emergency_save.pth"))
-            print("✅ Safe.")
+            print(" Safe.")
         except:
-            print("❌ Could not save emergency checkpoint (Drive/GPU likely dead).")
+            print(" Could not save emergency checkpoint (Drive/GPU likely dead).")
         raise e
 
 if __name__ == "__main__":

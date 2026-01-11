@@ -1,3 +1,16 @@
+"""
+Data Sanity Checking Tool
+
+This utility script validates the preprocessed and converted EEG dataset:
+  - Checks EEG tensor statistics (shape, min/max, mean values)
+  - Verifies data is not all zeros or corrupted
+  - Validates mask is correctly applied
+  - Inspects text encoding and metadata
+  - Reports potential issues or anomalies
+
+Run before training to ensure data preprocessing completed successfully.
+"""
+
 import torch
 from torch.utils.data import DataLoader
 from data_loader import ZuCoDataset, fixed_collate_fn
@@ -7,7 +20,7 @@ DATA_PATH = "./optimized_zuco"
 BATCH_SIZE = 64
 
 def check_data():
-    print(f"🕵️ Inspecting data in {DATA_PATH}...")
+    print(f" Inspecting data in {DATA_PATH}...")
     
     # Load dataset
     dataset = ZuCoDataset(DATA_PATH)
@@ -19,23 +32,23 @@ def check_data():
     mask = batch['channel_mask']
     
     # --- CHECK 1: Is the EEG data just zeros? ---
-    print("\n📊 EEG DATA STATISTICS:")
+    print("\EEG DATA STATISTICS:")
     print(f"Shape: {eeg.shape}")
     print(f"Min Value: {eeg.min().item():.4f}")
     print(f"Max Value: {eeg.max().item():.4f}")
     print(f"Mean Value: {eeg.mean().item():.4f}")
     
     if eeg.abs().sum() == 0:
-        print("❌ CRITICAL ERROR: EEG Tensors are all ZEROS!")
+        print(" CRITICAL ERROR: EEG Tensors are all ZEROS!")
     else:
-        print("✅ EEG data looks valid (non-zero).")
+        print(" EEG data looks valid (non-zero).")
 
     # --- CHECK 2: Is the mask working? ---
-    print("\n🎭 MASK STATISTICS:")
+    print("\n MASK STATISTICS:")
     print(f"Mask True Count (avg per sample): {mask.sum(dim=1).float().mean().item():.1f} / 840")
     
     if mask.sum() == 0:
-        print("❌ CRITICAL ERROR: Mask is empty!")
+        print(" CRITICAL ERROR: Mask is empty!")
 
 if __name__ == "__main__":
     check_data()

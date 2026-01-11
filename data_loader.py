@@ -1,3 +1,15 @@
+"""
+Data Loader - ZuCo Dataset Interface
+
+This module provides PyTorch Dataset and DataLoader utilities for the ZuCo 2.0 dataset:
+  - ZuCoDataset: PyTorch Dataset class that loads optimized EEG data from memmap files
+                 Provides EEG, mask, text, and subject ID information
+  - fixed_collate_fn: Custom collate function for batching data with proper padding
+
+Uses memory-mapped arrays to handle large EEG datasets efficiently without loading
+everything into RAM. Integrates with HuggingFace tokenizers for text processing.
+"""
+
 import os
 import torch
 import numpy as np

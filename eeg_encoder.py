@@ -1,3 +1,16 @@
+"""
+EEG Encoder - Superior EEG Signal Processing Architecture
+
+This module provides the core EEG encoding architecture with multiple advanced components:
+  - SEBlock: Squeeze-and-Excitation block for channel reweighting (handles noisy channels)
+  - MultiScaleTemporalBlock: Multi-kernel convolutions for capturing temporal patterns
+  - PositionalEncoding: Adds positional information to sequence data
+  - SuperiorEEGEncoder: Main encoder combining all components to transform raw EEG (channels x time) 
+                        into a 768-dim embedding
+
+Designed to handle EEG signal noise and extract semantic information relevant to language decoding.
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

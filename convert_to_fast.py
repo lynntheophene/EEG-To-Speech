@@ -1,3 +1,19 @@
+"""
+Data Conversion to Memory-Mapped Format (Version 1)
+
+This script converts preprocessed ZuCo EEG data (.npz files) into an optimized
+memory-mapped format for efficient training:
+  - Creates memory-mapped EEG array (huge file on disk, but loaded as-needed)
+  - Standardizes all EEG signals to fixed length (840 samples x 105 channels)
+  - Pads/truncates shorter/longer signals appropriately
+  - Stores metadata (text, masks, subject IDs) in pickle format
+  - Tracks signal lengths via mask for attention mechanisms
+
+Output: Optimized format in ./optimized_zuco/ for fast data loading during training
+
+[Note: This is Version 1. See convert_to_fast_v2.py for an improved version]
+"""
+
 import os
 import numpy as np
 import torch
