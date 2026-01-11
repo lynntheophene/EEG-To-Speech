@@ -52,4 +52,5 @@ checkpoints_phase1/
 checkpoints/
 
 # --- Hugging Face ---
-.cache/
+.cache/optimized_zuco/
+optimized_zuco/
